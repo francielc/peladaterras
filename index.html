@@ -289,6 +289,15 @@ select{cursor:pointer;}
       <button class="btn-draw btn" onclick="drawTeams()" style="margin-top:12px;background:linear-gradient(135deg,#0d47a1,#1976d2);box-shadow:0 4px 18px rgba(25,118,210,.25);">🔀 SORTEAR NOVAMENTE</button>
     </div>
     <hr class="divider"/>
+    <div class="card" style="margin-top:0;">
+      <div class="card-title">💸 DESPESAS DA PELADA</div>
+      <div id="matchExpList"></div>
+      <div class="row mt8" style="gap:8px;flex-wrap:wrap;">
+        <input type="text" id="expDesc" placeholder="Descrição (ex: Goleiro, Bola...)" style="flex:2;min-width:140px"/>
+        <input type="number" id="expVal" placeholder="R$ 0,00" min="0" step="0.50" style="flex:1;min-width:100px;"/>
+        <button class="btn btn-green" onclick="addExpense()">+ Adicionar</button>
+      </div>
+    </div>
     <button class="btn-save btn" onclick="saveMatch()">💾 SALVAR PELADA DO DIA</button>
     <button class="btn-pdf btn" onclick="generatePDF()">📄 GERAR RELATÓRIO PDF</button>
   </div>
@@ -313,13 +322,8 @@ select{cursor:pointer;}
       <div id="finPeriodLabel" class="mt8 small muted hidden"></div>
     </div>
     <div class="card">
-      <div class="card-title">💸 DESPESAS</div>
+      <div class="card-title">💸 DESPESAS POR PELADA</div>
       <div id="expenseList"></div>
-      <div class="row mt8" style="gap:8px;flex-wrap:wrap;">
-        <input type="text" id="expDesc" placeholder="Descrição (ex: Goleiro, Bola...)" style="flex:2;min-width:140px"/>
-        <input type="number" id="expVal" placeholder="R$ 0,00" min="0" step="0.50" style="flex:1;min-width:100px;"/>
-        <button class="btn btn-green" onclick="addExpense()">+ Adicionar</button>
-      </div>
     </div>
     <div class="fin-hero">
       <div class="fin-card" style="border-color:#2e7d3266;background:linear-gradient(135deg,#0d200d,#111d11);">
@@ -419,7 +423,7 @@ function startListeners(){
   });
   db.collection('expenses').orderBy('date','desc').onSnapshot(snap=>{
     expenses=snap.docs.map(d=>({...d.data(),_id:d.id}));
-    renderFinance(); bar(85);
+    renderFinance(); renderMatchExpenses(); bar(85);
   });
   db.collection('config').doc('matchday').onSnapshot(snap=>{
     if(snap.exists){
@@ -450,7 +454,7 @@ async function saveMatchday(){
 function switchTab(t){
   ['db','match','history','finance'].forEach(id=>document.getElementById('tab-'+id).classList.toggle('hidden',id!==t));
   document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['db','match','history','finance'][i]===t));
-  if(t==='match'){ renderDbPicker(); renderMatchList(); }
+  if(t==='match'){ renderDbPicker(); renderMatchList(); renderMatchExpenses(); }
   if(t==='history') renderHistory();
   if(t==='finance') renderFinance();
 }
@@ -536,6 +540,7 @@ function updateMatchDate(){
   const val=document.getElementById('matchDate').value, lbl=document.getElementById('matchDateLabel');
   if(val){ lbl.textContent='🗓️ '+new Date(val+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}); lbl.classList.remove('hidden'); }
   else lbl.classList.add('hidden');
+  renderMatchExpenses();
 }
 
 async function removeFromMatch(id){
@@ -719,8 +724,9 @@ async function addExpense(){
   const desc=document.getElementById('expDesc').value.trim(), val=parseFloat(document.getElementById('expVal').value);
   if(!desc) return toast('Informe a descrição!','error');
   if(!val||val<=0) return toast('Informe um valor válido!','error');
+  const matchDate=document.getElementById('matchDate').value||new Date().toISOString().slice(0,10);
   sync(true);
-  await db.collection('expenses').add({desc, val, date:new Date().toISOString().slice(0,10)});
+  await db.collection('expenses').add({desc, val, date:matchDate, matchDate:matchDate});
   document.getElementById('expDesc').value=''; document.getElementById('expVal').value='';
   sync(false); toast('Despesa adicionada! 💸');
 }
@@ -728,6 +734,25 @@ async function addExpense(){
 async function removeExpense(id){
   sync(true); await db.collection('expenses').doc(id).delete(); sync(false);
   toast('Despesa removida.');
+}
+
+function renderMatchExpenses(){
+  const matchDate=document.getElementById('matchDate').value||new Date().toISOString().slice(0,10);
+  const matchExps=expenses.filter(e=>(e.matchDate||e.date)===matchDate);
+  const list=document.getElementById('matchExpList');
+  if(!list) return;
+  if(!matchExps.length){
+    list.innerHTML=`<div class="empty-state" style="padding:16px 0"><div class="empty-text">Nenhuma despesa para esta pelada.</div></div>`;
+    return;
+  }
+  const total=matchExps.reduce((s,e)=>s+e.val,0);
+  list.innerHTML=matchExps.map(e=>`
+    <div class="fin-row">
+      <span style="flex:1;font-weight:700;color:#fff">${esc(e.desc)}</span>
+      <span style="color:#ef9a9a;font-weight:700;margin-right:8px">${fmtR(e.val)}</span>
+      <button class="btn-icon" style="font-size:14px" onclick="removeExpense('${e._id}')">🗑️</button>
+    </div>`).join('')+`
+    <div style="padding:8px 14px 4px;font-size:12px;color:#ef9a9a;font-weight:700;text-align:right;border-top:1px solid #1a3d1a;margin-top:4px">Total: ${fmtR(total)}</div>`;
 }
 
 // ══ FINANCEIRO ═════════════════════════════════════
@@ -801,6 +826,24 @@ function renderFinance(){
         </div>
         <div class="fin-bar-wrap"><div class="fin-bar" style="width:${pct}%;background:#b71c1c;"></div></div>
         <span style="font-size:11px;color:#66bb6a">${pct}% das despesas</span>
+      </div>`;
+    }).join('');
+    // Agrupar despesas por pelada no expenseList
+    const expByDate={};
+    expenses.forEach(e=>{ const d=e.matchDate||e.date; if(!expByDate[d]) expByDate[d]=[]; expByDate[d].push(e); });
+    const sortedDates=Object.keys(expByDate).sort((a,b)=>b.localeCompare(a));
+    expList.innerHTML=sortedDates.map(dt=>{
+      const exps=expByDate[dt];
+      const tot=exps.reduce((s,e)=>s+e.val,0);
+      const dl=new Date(dt+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
+      return `<div style="margin-bottom:12px;">
+        <div style="font-size:11px;font-weight:700;color:#ffd54f;letter-spacing:1px;margin-bottom:6px;padding:4px 6px;background:#1a1400;border-radius:6px;display:inline-block;">📅 ${dl}</div>
+        ${exps.map(e=>`<div class="fin-row" style="padding:8px 12px;">
+          <span style="flex:1;color:#fff">${esc(e.desc)}</span>
+          <span style="color:#ef9a9a;font-weight:700;margin-right:8px">${fmtR(e.val)}</span>
+          <button class="btn-icon" style="font-size:14px" onclick="removeExpense('${e._id}')">🗑️</button>
+        </div>`).join('')}
+        <div style="padding:4px 12px;font-size:11px;color:#ef9a9a;text-align:right;font-weight:700">Subtotal: ${fmtR(tot)}</div>
       </div>`;
     }).join('');
   }
@@ -927,8 +970,8 @@ function generateFinancialPDF(){
     const dl=new Date(h.date+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
     return `<div class="mr"><div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;margin-bottom:4px"><span><b>${dl}</b> <span style="color:#666;font-size:10px">${h.players.length} jog.</span></span><span><span class="paid">${fmtR(arr)}</span> <span class="pend" style="font-size:10px">pend: ${fmtR(pendArr)}</span></span></div>${pctBar(pct,'#2e7d32')}<span style="font-size:9px;color:#666">${pct}% · ${paid} pagaram · ${pend} pendente(s)</span></div>`;
   }).join(''):'<div style="padding:12px 16px;color:#666">Nenhuma pelada no período.</div>'}
-  ${expenses.length?`<div class="sec r">💸 DESPESAS</div><table><tr><th style="background:#c62828">DESCRIÇÃO</th><th style="background:#c62828">DATA</th><th style="background:#c62828;text-align:right">VALOR</th><th style="background:#c62828;text-align:right">%</th></tr>
-  ${expenses.map(e=>{ const pct=totalExp>0?Math.round(e.val/totalExp*100):0, dl=new Date(e.date+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'});
+  ${expenses.length?`<div class="sec r">💸 DESPESAS</div><table><tr><th style="background:#c62828">DESCRIÇÃO</th><th style="background:#c62828">PELADA</th><th style="background:#c62828;text-align:right">VALOR</th><th style="background:#c62828;text-align:right">%</th></tr>
+  ${expenses.map(e=>{ const pct=totalExp>0?Math.round(e.val/totalExp*100):0, dt=e.matchDate||e.date, dl=new Date(dt+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'});
     return `<tr><td><b>${esc(e.desc)}</b></td><td>${dl}</td><td class="pend" style="text-align:right">${fmtR(e.val)}</td><td style="text-align:right;color:#666">${pct}%</td></tr>`; }).join('')}
   <tr style="background:#ffebee"><td colspan="2"><b>TOTAL</b></td><td class="pend" style="text-align:right"><b>${fmtR(totalExp)}</b></td><td></td></tr></table>`:''}
   <div class="sec p">📊 RESUMO FINANCEIRO</div>
