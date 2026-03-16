@@ -538,44 +538,8 @@ async function addSelectedToMatch(){
 // ══ PELADA DO DIA ══════════════════════════════════
 function updateMatchDate(){
   const val=document.getElementById('matchDate').value, lbl=document.getElementById('matchDateLabel');
-  if(!val){ lbl.classList.add('hidden'); renderMatchExpenses(); return; }
-
-  const dateLabel=new Date(val+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  const saved=history.find(h=>h.date===val);
-
-  if(saved){
-    // Carrega os dados da pelada salva nessa data
-    matchPlayers=saved.players.map(p=>({...p}));
-    matchTeams=saved.teams?normalizeTeams(saved.teams):null;
-    document.getElementById('matchValue').value=saved.valor||0;
-
-    lbl.innerHTML='🗓️ '+dateLabel+' <span style="margin-left:8px;background:#1565c0;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;letter-spacing:.5px;">📂 PELADA CARREGADA</span>';
-    lbl.classList.remove('hidden');
-
-    renderMatchList();
-    renderDbPicker();
-    updateDrawBtn();
-
-    if(matchTeams){
-      document.getElementById('teamsSection').classList.remove('hidden');
-      renderTeams();
-    } else {
-      document.getElementById('teamsSection').classList.add('hidden');
-    }
-
-    toast('Pelada de '+dateLabel+' carregada! ✅');
-  } else {
-    lbl.innerHTML='🗓️ '+dateLabel+' <span style="margin-left:8px;background:#1a3d1a;color:#66bb6a;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;letter-spacing:.5px;">✨ NOVA PELADA</span>';
-    lbl.classList.remove('hidden');
-    // Limpa lista e times para nova pelada nessa data
-    matchPlayers=[];
-    matchTeams=null;
-    document.getElementById('teamsSection').classList.add('hidden');
-    renderMatchList();
-    renderDbPicker();
-    updateDrawBtn();
-  }
-
+  if(val){ lbl.textContent='🗓️ '+new Date(val+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}); lbl.classList.remove('hidden'); }
+  else lbl.classList.add('hidden');
   renderMatchExpenses();
 }
 
@@ -798,6 +762,8 @@ function clearFinFilter(){ document.getElementById('finFrom').value=''; document
 function renderFinance(){
   const fromVal=document.getElementById('finFrom').value, toVal=document.getElementById('finTo').value;
   const filtered=history.filter(h=>{ if(fromVal&&h.date<fromVal) return false; if(toVal&&h.date>toVal) return false; return true; });
+  // Filtra despesas pelo mesmo período
+  const filteredExp=expenses.filter(e=>{ const d=e.matchDate||e.date; if(fromVal&&d<fromVal) return false; if(toVal&&d>toVal) return false; return true; });
 
   const lbl=document.getElementById('finPeriodLabel');
   if(fromVal||toVal){
@@ -819,7 +785,7 @@ function renderFinance(){
       else{ totalPend+=v; if(!debtorMap[pid]) debtorMap[pid]={name:p.name,total:0,count:0}; debtorMap[pid].total+=v; debtorMap[pid].count++; }
     });
   });
-  const totalExp=expenses.reduce((s,e)=>s+e.val,0), saldo=totalArr-totalExp;
+  const totalExp=filteredExp.reduce((s,e)=>s+e.val,0), saldo=totalArr-totalExp;
   document.getElementById('finTotal').textContent=fmtR(totalArr);
   document.getElementById('finExpTotal').textContent=fmtR(totalExp);
   document.getElementById('finPending').textContent=fmtR(totalPend);
@@ -849,10 +815,10 @@ function renderFinance(){
   const expCard=document.getElementById('finExpCard'), expDetail=document.getElementById('finExpDetail');
   const expList=document.getElementById('expenseList');
   expList.innerHTML='';
-  if(!expenses.length){ expCard.style.display='none'; expList.innerHTML=`<div class="empty-state" style="padding:16px"><div class="empty-text">Nenhuma despesa cadastrada.</div></div>`; }
+  if(!filteredExp.length){ expCard.style.display='none'; expList.innerHTML=`<div class="empty-state" style="padding:16px"><div class="empty-text">${expenses.length?'Nenhuma despesa no período.':'Nenhuma despesa cadastrada.'}</div></div>`; }
   else{
     expCard.style.display='block';
-    expDetail.innerHTML=expenses.map(e=>{
+    expDetail.innerHTML=filteredExp.map(e=>{
       const pct=totalExp>0?Math.round(e.val/totalExp*100):0;
       return `<div class="fin-row" style="flex-direction:column;align-items:stretch;gap:5px;">
         <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;">
@@ -866,7 +832,7 @@ function renderFinance(){
     }).join('');
     // Agrupar despesas por pelada no expenseList
     const expByDate={};
-    expenses.forEach(e=>{ const d=e.matchDate||e.date; if(!expByDate[d]) expByDate[d]=[]; expByDate[d].push(e); });
+    filteredExp.forEach(e=>{ const d=e.matchDate||e.date; if(!expByDate[d]) expByDate[d]=[]; expByDate[d].push(e); });
     const sortedDates=Object.keys(expByDate).sort((a,b)=>b.localeCompare(a));
     expList.innerHTML=sortedDates.map(dt=>{
       const exps=expByDate[dt];
@@ -960,12 +926,13 @@ function pdfFromHistory(i){
 function generateFinancialPDF(){
   const fromVal=document.getElementById('finFrom').value, toVal=document.getElementById('finTo').value;
   const filtered=history.filter(h=>{ if(fromVal&&h.date<fromVal) return false; if(toVal&&h.date>toVal) return false; return true; });
+  const filteredExp=expenses.filter(e=>{ const d=e.matchDate||e.date; if(fromVal&&d<fromVal) return false; if(toVal&&d>toVal) return false; return true; });
   let totalArr=0, totalPend=0; const debtorMap={}, rankMap={};
   filtered.forEach(h=>{ const defaultV=h.valor||0; h.players.forEach(p=>{ const v=p.valor!=null?p.valor:defaultV; const pid=p.id||p._id||p.name;
     if(!rankMap[pid]) rankMap[pid]={name:p.name,peladas:0,pagou:0}; rankMap[pid].peladas++;
     if(p.paid){ totalArr+=v; rankMap[pid].pagou++; } else{ totalPend+=v; if(!debtorMap[pid]) debtorMap[pid]={name:p.name,total:0,count:0}; debtorMap[pid].total+=v; debtorMap[pid].count++; }
   }); });
-  const totalExp=expenses.reduce((s,e)=>s+e.val,0), saldo=totalArr-totalExp;
+  const totalExp=filteredExp.reduce((s,e)=>s+e.val,0), saldo=totalArr-totalExp;
   const saldoCor=saldo>=0?'#1b5e20':'#c62828', saldoBg=saldo>=0?'#e8f5e9':'#ffebee';
   const dList=Object.values(debtorMap).sort((a,b)=>b.total-a.total);
   const rList=Object.values(rankMap).sort((a,b)=>b.peladas-a.peladas||b.pagou-a.pagou);
@@ -1006,8 +973,8 @@ function generateFinancialPDF(){
     const dl=new Date(h.date+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
     return `<div class="mr"><div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;margin-bottom:4px"><span><b>${dl}</b> <span style="color:#666;font-size:10px">${h.players.length} jog.</span></span><span><span class="paid">${fmtR(arr)}</span> <span class="pend" style="font-size:10px">pend: ${fmtR(pendArr)}</span></span></div>${pctBar(pct,'#2e7d32')}<span style="font-size:9px;color:#666">${pct}% · ${paid} pagaram · ${pend} pendente(s)</span></div>`;
   }).join(''):'<div style="padding:12px 16px;color:#666">Nenhuma pelada no período.</div>'}
-  ${expenses.length?`<div class="sec r">💸 DESPESAS</div><table><tr><th style="background:#c62828">DESCRIÇÃO</th><th style="background:#c62828">PELADA</th><th style="background:#c62828;text-align:right">VALOR</th><th style="background:#c62828;text-align:right">%</th></tr>
-  ${expenses.map(e=>{ const pct=totalExp>0?Math.round(e.val/totalExp*100):0, dt=e.matchDate||e.date, dl=new Date(dt+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'});
+  ${filteredExp.length?`<div class="sec r">💸 DESPESAS</div><table><tr><th style="background:#c62828">DESCRIÇÃO</th><th style="background:#c62828">PELADA</th><th style="background:#c62828;text-align:right">VALOR</th><th style="background:#c62828;text-align:right">%</th></tr>
+  ${filteredExp.map(e=>{ const pct=totalExp>0?Math.round(e.val/totalExp*100):0, dt=e.matchDate||e.date, dl=new Date(dt+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'});
     return `<tr><td><b>${esc(e.desc)}</b></td><td>${dl}</td><td class="pend" style="text-align:right">${fmtR(e.val)}</td><td style="text-align:right;color:#666">${pct}%</td></tr>`; }).join('')}
   <tr style="background:#ffebee"><td colspan="2"><b>TOTAL</b></td><td class="pend" style="text-align:right"><b>${fmtR(totalExp)}</b></td><td></td></tr></table>`:''}
   <div class="sec p">📊 RESUMO FINANCEIRO</div>
