@@ -538,8 +538,41 @@ async function addSelectedToMatch(){
 // ══ PELADA DO DIA ══════════════════════════════════
 function updateMatchDate(){
   const val=document.getElementById('matchDate').value, lbl=document.getElementById('matchDateLabel');
-  if(val){ lbl.textContent='🗓️ '+new Date(val+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}); lbl.classList.remove('hidden'); }
-  else lbl.classList.add('hidden');
+  if(!val){ lbl.classList.add('hidden'); renderMatchExpenses(); return; }
+
+  const dateLabel=new Date(val+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const saved=history.find(h=>h.date===val);
+
+  if(saved){
+    matchPlayers=saved.players.map(p=>({...p}));
+    matchTeams=saved.teams?normalizeTeams(saved.teams):null;
+    document.getElementById('matchValue').value=saved.valor||0;
+
+    lbl.innerHTML='🗓️ '+dateLabel+' <span style="margin-left:8px;background:#1565c0;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;letter-spacing:.5px;">📂 PELADA CARREGADA</span>';
+    lbl.classList.remove('hidden');
+
+    renderMatchList();
+    renderDbPicker();
+    updateDrawBtn();
+
+    if(matchTeams){
+      document.getElementById('teamsSection').classList.remove('hidden');
+      renderTeams();
+    } else {
+      document.getElementById('teamsSection').classList.add('hidden');
+    }
+    toast('Pelada de '+dateLabel+' carregada! ✅');
+  } else {
+    lbl.innerHTML='🗓️ '+dateLabel+' <span style="margin-left:8px;background:#1a3d1a;color:#66bb6a;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;letter-spacing:.5px;">✨ NOVA PELADA</span>';
+    lbl.classList.remove('hidden');
+    matchPlayers=[];
+    matchTeams=null;
+    document.getElementById('teamsSection').classList.add('hidden');
+    renderMatchList();
+    renderDbPicker();
+    updateDrawBtn();
+  }
+
   renderMatchExpenses();
 }
 
@@ -762,7 +795,6 @@ function clearFinFilter(){ document.getElementById('finFrom').value=''; document
 function renderFinance(){
   const fromVal=document.getElementById('finFrom').value, toVal=document.getElementById('finTo').value;
   const filtered=history.filter(h=>{ if(fromVal&&h.date<fromVal) return false; if(toVal&&h.date>toVal) return false; return true; });
-  // Filtra despesas pelo mesmo período
   const filteredExp=expenses.filter(e=>{ const d=e.matchDate||e.date; if(fromVal&&d<fromVal) return false; if(toVal&&d>toVal) return false; return true; });
 
   const lbl=document.getElementById('finPeriodLabel');
@@ -830,7 +862,6 @@ function renderFinance(){
         <span style="font-size:11px;color:#66bb6a">${pct}% das despesas</span>
       </div>`;
     }).join('');
-    // Agrupar despesas por pelada no expenseList
     const expByDate={};
     filteredExp.forEach(e=>{ const d=e.matchDate||e.date; if(!expByDate[d]) expByDate[d]=[]; expByDate[d].push(e); });
     const sortedDates=Object.keys(expByDate).sort((a,b)=>b.localeCompare(a));
