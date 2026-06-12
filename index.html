@@ -86,7 +86,8 @@ select{cursor:pointer;}
 .btn-save{width:100%;padding:14px;background:linear-gradient(135deg,#0d47a1,#1976d2);color:#fff;border-radius:12px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;box-shadow:0 4px 18px rgba(25,118,210,.3);margin-top:10px;border:none;cursor:pointer;transition:all .15s;}
 .btn-pdf{width:100%;padding:14px;background:linear-gradient(135deg,#b71c1c,#e53935);color:#fff;border-radius:12px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;box-shadow:0 4px 18px rgba(229,57,53,.25);margin-top:10px;border:none;cursor:pointer;transition:all .15s;}
 .btn-fin-pdf{width:100%;padding:14px;background:linear-gradient(135deg,#4a148c,#7b1fa2);color:#fff;border-radius:12px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;box-shadow:0 4px 18px rgba(123,31,162,.25);margin-top:10px;border:none;cursor:pointer;transition:all .15s;}
-.btn-save:hover,.btn-pdf:hover,.btn-fin-pdf:hover{opacity:.88;transform:translateY(-1px);}
+.btn-contrib-pdf{width:100%;padding:14px;background:linear-gradient(135deg,#00695c,#00897b);color:#fff;border-radius:12px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;box-shadow:0 4px 18px rgba(0,137,123,.25);margin-top:10px;border:none;cursor:pointer;transition:all .15s;}
+.btn-save:hover,.btn-pdf:hover,.btn-fin-pdf:hover,.btn-contrib-pdf:hover{opacity:.88;transform:translateY(-1px);}
 /* BADGES */
 .badge{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.5px;padding:2px 8px;border-radius:4px;}
 .badge-pos{background:#1b3d1b;color:#66bb6a;}
@@ -344,6 +345,7 @@ select{cursor:pointer;}
     <div class="card"><div class="card-title">⚠️ PAGAMENTOS PENDENTES</div><div id="finDebtors"></div></div>
     <div class="card"><div class="card-title">🏆 RANKING DE PARTICIPAÇÃO</div><div id="finRanking"></div></div>
     <button class="btn-fin-pdf btn" onclick="generateFinancialPDF()">📊 GERAR RELATÓRIO FINANCEIRO PDF</button>
+    <button class="btn-contrib-pdf btn" onclick="generatePlayerContributionPDF()">👤 RELATÓRIO DE CONTRIBUIÇÃO POR JOGADOR</button>
   </div>
 
 </div>
@@ -1022,6 +1024,130 @@ function generateFinancialPDF(){
   <div class="footer">Pelada Terras Alphaville FC · ${periodoStr} · Emitido: ${now}</div></body></html>`;
   const w=window.open('','_blank'); w.document.write(html); w.document.close(); w.onload=()=>{ w.focus(); w.print(); };
   toast('Relatório financeiro aberto! Ctrl+P → Salvar como PDF 📊');
+}
+
+// ══ RELATÓRIO CONTRIBUIÇÃO POR JOGADOR ══════════════
+function generatePlayerContributionPDF(){
+  const fromVal=document.getElementById('finFrom').value, toVal=document.getElementById('finTo').value;
+  const filtered=history.filter(h=>{ if(fromVal&&h.date<fromVal) return false; if(toVal&&h.date>toVal) return false; return true; });
+  if(!filtered.length) return toast('Nenhuma pelada no período selecionado!','error');
+
+  // Montar mapa por jogador
+  const playerMap={};
+  filtered.forEach(h=>{
+    const defaultV=h.valor||0;
+    const dl=new Date(h.date+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
+    h.players.forEach(p=>{
+      const pid=p.id||p._id||p.name;
+      if(!playerMap[pid]) playerMap[pid]={name:p.name,peladas:0,pago:0,pendente:0,totalDev:0,matchDetail:[]};
+      const v=p.valor!=null?p.valor:defaultV;
+      playerMap[pid].peladas++;
+      playerMap[pid].totalDev+=v;
+      if(p.paid){ playerMap[pid].pago+=v; }
+      else { playerMap[pid].pendente+=v; }
+      playerMap[pid].matchDetail.push({date:dl,valor:v,paid:p.paid});
+    });
+  });
+
+  const pList=Object.values(playerMap).sort((a,b)=>b.pago-a.pago||a.pendente-b.pendente);
+  const grandPago=pList.reduce((s,p)=>s+p.pago,0);
+  const grandPend=pList.reduce((s,p)=>s+p.pendente,0);
+  const grandTotal=grandPago+grandPend;
+
+  const fmt=s=>new Date(s+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const fR=v=>'R$ '+v.toFixed(2).replace('.',',');
+  const now=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  const periodoStr=fromVal||toVal?[fromVal&&'De: '+fmt(fromVal),toVal&&'Até: '+fmt(toVal)].filter(Boolean).join(' · '):'Todo o período';
+
+  const medalhas=['🥇','🥈','🥉'];
+
+  const rowsHTML=pList.map((p,i)=>{
+    const taxa=p.peladas>0?Math.round(p.pago/p.totalDev*100):0;
+    const statusColor=taxa===100?'#1b5e20':taxa===0?'#c62828':'#e65100';
+    const statusBg=taxa===100?'#e8f5e9':taxa===0?'#ffebee':'#fff3e0';
+    const pctPago=grandTotal>0?Math.round(p.pago/grandTotal*100):0;
+    return `
+    <tr>
+      <td style="text-align:center;font-size:14px">${medalhas[i]||'#'+(i+1)}</td>
+      <td><b>${esc(p.name)}</b></td>
+      <td style="text-align:center">${p.peladas}</td>
+      <td style="text-align:right;color:#1b5e20;font-weight:700">${fR(p.pago)}</td>
+      <td style="text-align:right;color:${p.pendente>0?'#c62828':'#999'};font-weight:700">${p.pendente>0?fR(p.pendente):'-'}</td>
+      <td style="text-align:right;font-weight:700">${fR(p.totalDev)}</td>
+      <td style="text-align:center"><span style="background:${statusBg};color:${statusColor};padding:2px 7px;border-radius:4px;font-weight:700;font-size:10px">${taxa}%</span></td>
+      <td style="text-align:right;color:#666;font-size:10px">${pctPago}%</td>
+    </tr>
+    <tr class="detail-row" style="background:#f9f9f9">
+      <td colspan="8" style="padding:4px 12px 8px 36px;">
+        <div style="display:flex;flex-wrap:wrap;gap:4px;">
+          ${p.matchDetail.map(m=>`<span style="font-size:9px;padding:2px 6px;border-radius:3px;border:1px solid ${m.paid?'#a5d6a7':'#ef9a9a'};background:${m.paid?'#f1fff4':'#fff5f5'};color:${m.paid?'#1b5e20':'#c62828'}">${m.date}: ${fR(m.valor)} ${m.paid?'✅':'⏳'}</span>`).join('')}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  const html=`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"/><title>Contribuição por Jogador</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:Arial,sans-serif;background:#fff;color:#111;font-size:12px;padding-bottom:50px;}
+    .header{background:linear-gradient(135deg,#00695c,#00897b);color:#fff;padding:20px 24px;text-align:center;}
+    .header h1{font-size:20px;letter-spacing:2px;margin-bottom:4px;}
+    .header h2{font-size:12px;color:#b2dfdb;font-weight:400;margin-top:4px;}
+    .header p{font-size:10px;color:#80cbc4;margin-top:3px;}
+    .stripe{height:5px;background:linear-gradient(90deg,#1b5e20,#69f0ae,#00897b);}
+    .periodo{background:#f0fffe;border-left:4px solid #00897b;padding:8px 16px;margin:12px 16px;font-size:11px;color:#555;}
+    .totais{display:flex;gap:10px;padding:10px 16px;flex-wrap:wrap;}
+    .tot{flex:1;min-width:100px;border-radius:8px;padding:10px;text-align:center;border:1px solid;}
+    .tot-v{font-size:18px;font-weight:900;margin-bottom:2px;}
+    .tot-l{font-size:9px;letter-spacing:.5px;}
+    table{width:calc(100% - 32px);margin:0 16px 12px;border-collapse:collapse;font-size:11px;}
+    th{padding:7px 8px;text-align:left;color:#fff;font-size:9px;letter-spacing:.5px;background:#00695c;}
+    td{padding:6px 8px;border-bottom:1px solid #eee;vertical-align:top;}
+    .bar-wrap{height:6px;background:#e0e0e0;border-radius:3px;margin-top:4px;}
+    .bar{height:100%;border-radius:3px;}
+    .sec{margin:14px 16px 6px;font-size:12px;font-weight:700;padding-bottom:4px;border-bottom:2px solid #00897b;color:#00695c;}
+    .footer{background:#00695c;color:#b2dfdb;text-align:center;padding:8px;font-size:9px;}
+    @media print{.footer{position:fixed;bottom:0;width:100%;}body{padding-bottom:30px;} .detail-row{display:table-row;}}
+  </style></head><body>
+  <div class="header">
+    <h1>👤 CONTRIBUIÇÃO POR JOGADOR</h1>
+    <h2>PELADA TERRAS ALPHAVILLE FC</h2>
+    <p>Emitido em: ${now} · ${filtered.length} pelada(s) · ${pList.length} jogador(es)</p>
+  </div>
+  <div class="stripe"></div>
+  <div class="periodo">📅 Período: <b>${periodoStr}</b></div>
+  <div class="totais">
+    <div class="tot" style="background:#e8f5e9;border-color:#a5d6a7"><div class="tot-v" style="color:#1b5e20">${fR(grandPago)}</div><div class="tot-l" style="color:#388e3c">💰 TOTAL PAGO</div></div>
+    <div class="tot" style="background:#ffebee;border-color:#ef9a9a"><div class="tot-v" style="color:#c62828">${fR(grandPend)}</div><div class="tot-l" style="color:#b71c1c">⏳ TOTAL PENDENTE</div></div>
+    <div class="tot" style="background:#e0f7fa;border-color:#80deea"><div class="tot-v" style="color:#00695c">${fR(grandTotal)}</div><div class="tot-l" style="color:#00838f">📊 TOTAL GERAL</div></div>
+    <div class="tot" style="background:#f3e5f5;border-color:#ce93d8"><div class="tot-v" style="color:#6a1b9a">${pList.length}</div><div class="tot-l" style="color:#7b1fa2">👥 JOGADORES</div></div>
+  </div>
+  <div class="sec">📊 CONTRIBUIÇÃO INDIVIDUAL</div>
+  <table>
+    <tr>
+      <th style="width:30px">#</th>
+      <th>JOGADOR</th>
+      <th style="text-align:center">PELADAS</th>
+      <th style="text-align:right">PAGO</th>
+      <th style="text-align:right">PENDENTE</th>
+      <th style="text-align:right">TOTAL DUE</th>
+      <th style="text-align:center">TAXA</th>
+      <th style="text-align:right">% DO TOTAL</th>
+    </tr>
+    ${rowsHTML}
+    <tr style="background:#e0f7fa">
+      <td colspan="3"><b>TOTAIS</b></td>
+      <td style="text-align:right;color:#1b5e20;font-weight:900">${fR(grandPago)}</td>
+      <td style="text-align:right;color:#c62828;font-weight:900">${fR(grandPend)}</td>
+      <td style="text-align:right;font-weight:900">${fR(grandTotal)}</td>
+      <td colspan="2"></td>
+    </tr>
+  </table>
+  <div class="footer">Pelada Terras Alphaville FC · ${periodoStr} · Emitido: ${now}</div>
+  </body></html>`;
+
+  const w=window.open('','_blank'); w.document.write(html); w.document.close(); w.onload=()=>{ w.focus(); w.print(); };
+  toast('Relatório de contribuição aberto! Ctrl+P → Salvar como PDF 👤');
 }
 
 // ══ HELPERS ════════════════════════════════════════
