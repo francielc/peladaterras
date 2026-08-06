@@ -53,14 +53,20 @@ header{background:linear-gradient(135deg,#143d14,#1b5e20 50%,#143d14);padding:0 
 .btn-cfg:hover{background:rgba(255,255,255,.1);}
 /* TABS */
 .tabs{background:#0a140a;border-bottom:2px solid #1a3d1a;position:sticky;top:68px;z-index:99;}
-.tabs-inner{max-width:780px;margin:0 auto;display:flex;flex-wrap:wrap;}
-.tab{flex:1;min-width:70px;padding:11px 4px;border:none;background:transparent;font-family:'Bebas Neue',sans-serif;font-size:clamp(9px,2.4vw,13px);letter-spacing:.5px;color:#4caf50;cursor:pointer;border-bottom:3px solid transparent;transition:all .2s;position:relative;top:2px;text-align:center;}
-.tab.active{color:#69f0ae;border-bottom-color:#4caf50;}
-.tab:hover:not(.active){color:#81c784;}
+.tabs-inner{max-width:780px;margin:0 auto;display:flex;flex-wrap:wrap;padding:8px;gap:6px;}
+.tab{flex:1;min-width:70px;padding:9px 4px 8px;border:none;background:transparent;color:#4caf50;cursor:pointer;border-radius:12px;transition:all .2s;text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px;}
+.tab-ico{font-size:19px;line-height:1;}
+.tab-lbl{font-family:'Bebas Neue',sans-serif;font-size:clamp(9px,2.3vw,12px);letter-spacing:.5px;}
+.tab.active{color:#0d1a0d;background:linear-gradient(135deg,#43a047,#69f0ae);box-shadow:0 2px 10px rgba(105,240,174,.35);}
+.tab:hover:not(.active){color:#81c784;background:rgba(255,255,255,.05);}
 /* LAYOUT */
 .container{max-width:780px;margin:0 auto;padding:20px 14px 50px;}
-.card{background:#111d11;border:1px solid #1e3d1e;border-radius:13px;padding:18px;margin-bottom:16px;animation:fadeIn .3s ease;}
-.card-title{font-size:11px;font-weight:700;color:#66bb6a;letter-spacing:2.5px;margin-bottom:14px;}
+.card{background:#111d11;border:1px solid #1e3d1e;border-left:4px solid #2e7d32;border-radius:16px;padding:20px;margin-bottom:18px;animation:fadeIn .3s ease;box-shadow:0 3px 14px rgba(0,0,0,.25);}
+.card.card-m{border-left-color:#1976d2;}
+.card.card-h{border-left-color:#7b1fa2;}
+.card.card-f{border-left-color:#00897b;}
+.card-title{font-size:11.5px;font-weight:700;color:#69f0ae;letter-spacing:2.5px;margin-bottom:15px;display:flex;align-items:center;gap:6px;}
+.card-help{font-size:12.5px;color:#8fc98f;opacity:.85;line-height:1.55;margin:-8px 0 15px;}
 .row{display:flex;gap:8px;flex-wrap:wrap;}
 .divider{border:none;border-top:1px solid #1a3d1a;margin:16px 0;}
 /* INPUTS */
@@ -75,8 +81,8 @@ select{cursor:pointer;}
 .btn{cursor:pointer;border:none;font-family:'Barlow',sans-serif;font-weight:700;transition:all .15s;}
 .btn:hover{opacity:.88;transform:translateY(-1px);}
 .btn:active{transform:translateY(0);}
-.btn-green{background:#2e7d32;color:#fff;border-radius:9px;padding:10px 18px;font-size:14px;}
-.btn-outline{background:transparent;color:#4caf50;border:1.5px solid #2e7d32;border-radius:9px;padding:8px 14px;font-size:13px;}
+.btn-green{background:linear-gradient(135deg,#2e7d32,#43a047);color:#fff;border-radius:11px;padding:11px 20px;font-size:14px;box-shadow:0 3px 10px rgba(46,125,50,.35);}
+.btn-outline{background:transparent;color:#4caf50;border:1.5px solid #2e7d32;border-radius:11px;padding:8px 14px;font-size:13px;}
 .btn-outline:hover{background:#1a2e1a;}
 .btn-icon{background:transparent;border:none;cursor:pointer;font-size:17px;padding:4px 7px;border-radius:6px;transition:all .15s;}
 .btn-icon:hover{background:rgba(255,255,255,.07);transform:scale(1.12);}
@@ -94,13 +100,17 @@ select{cursor:pointer;}
 .badge-paid{background:#1b5e20;color:#69f0ae;}
 .badge-pend{background:#3d1a1a;color:#ef9a9a;}
 /* PLAYERS */
-.player-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;border-radius:10px;background:#0d160d;border:1px solid #1a3d1a;margin-bottom:8px;animation:slideIn .25s ease;}
+.player-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;border-radius:14px;background:#0d160d;border:1px solid #1a3d1a;margin-bottom:9px;animation:slideIn .25s ease;transition:border-color .2s,transform .15s;}
+.player-row:hover{border-color:#2e7d32;transform:translateX(2px);}
 .player-row.paid-row{border-color:#1b5e20;}
 .player-row.pend-row{border-color:#3d1a1a;}
 .p-num{font-size:14px;font-weight:700;color:#4caf50;min-width:22px;}
 .p-info{flex:1;min-width:100px;}
 .p-name{font-size:15px;font-weight:700;color:#fff;}
 .p-sub{margin-top:3px;}
+/* AVATAR */
+.avatar-circle{width:36px;height:36px;min-width:36px;border-radius:50%;background:linear-gradient(135deg,#2e7d32,#66bb6a);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:16px;color:#fff;letter-spacing:0;box-shadow:0 2px 8px rgba(0,0,0,.35);flex-shrink:0;}
+.avatar-circle.sm{width:28px;height:28px;min-width:28px;font-size:13px;}
 /* STATS */
 .stats{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
 .stat{flex:1;min-width:80px;background:#0d160d;border-radius:10px;padding:12px 0;text-align:center;border:1px solid;}
@@ -203,7 +213,7 @@ select{cursor:pointer;}
   <div class="hinner">
     <div>
       <div class="htitle">⚽ Pelada Terras Alphaville FC</div>
-      <div class="hsub">GERENCIADOR DE PELADAS <span class="sync-dot" id="syncDot" style="display:none"></span></div>
+      <div class="hsub" id="hGreeting">GERENCIADOR DE PELADAS <span class="sync-dot" id="syncDot" style="display:none"></span></div>
     </div>
     <div class="hright">
       <div class="hbadge">
@@ -217,10 +227,10 @@ select{cursor:pointer;}
 
 <div class="tabs">
   <div class="tabs-inner">
-    <button class="tab active" onclick="switchTab('db')">👥 JOGADORES</button>
-    <button class="tab" onclick="switchTab('match')">⚽ PELADA DO DIA</button>
-    <button class="tab" onclick="switchTab('history')">📋 HISTÓRICO</button>
-    <button class="tab" onclick="switchTab('finance')">💰 FINANCEIRO</button>
+    <button class="tab active" onclick="switchTab('db')"><span class="tab-ico">👥</span><span class="tab-lbl">JOGADORES</span></button>
+    <button class="tab" onclick="switchTab('match')"><span class="tab-ico">⚽</span><span class="tab-lbl">PELADA DO DIA</span></button>
+    <button class="tab" onclick="switchTab('history')"><span class="tab-ico">📋</span><span class="tab-lbl">HISTÓRICO</span></button>
+    <button class="tab" onclick="switchTab('finance')"><span class="tab-ico">💰</span><span class="tab-lbl">FINANCEIRO</span></button>
   </div>
 </div>
 
@@ -230,6 +240,7 @@ select{cursor:pointer;}
   <div id="tab-db">
     <div class="card">
       <div class="card-title">➕ CADASTRAR NOVO JOGADOR</div>
+      <div class="card-help">Adicione os jogadores do grupo uma vez — depois é só selecioná-los rapidamente em cada pelada.</div>
       <div class="row">
         <input type="text" id="dbName" placeholder="Nome completo..." style="flex:2;min-width:140px" onkeydown="if(event.key==='Enter')addDbPlayer()"/>
         <select id="dbPos" style="flex:1;min-width:120px;">
@@ -240,24 +251,26 @@ select{cursor:pointer;}
     </div>
     <div class="card">
       <div class="card-title">📋 JOGADORES CADASTRADOS (<span id="dbCount">0</span>)</div>
+      <div class="card-help">Esse é o seu grupo fixo. Toque no 🗑️ para remover alguém que não joga mais.</div>
       <div id="dbList"><div class="empty-state"><div class="empty-icon">🏃</div><div class="empty-text">Nenhum jogador cadastrado ainda.</div></div></div>
     </div>
   </div>
 
   <!-- TAB PELADA DO DIA -->
   <div id="tab-match" class="hidden">
-    <div class="card">
+    <div class="card card-m">
       <div class="card-title">📅 DATA DA PELADA</div>
       <input type="date" id="matchDate" onchange="updateMatchDate()"/>
       <div id="matchDateLabel" class="mt8 muted small hidden"></div>
-      <div style="margin-top:12px;">
+      <div style="margin-top:14px;">
         <div class="card-title" style="margin-bottom:8px;">💵 VALOR POR JOGADOR (R$)</div>
         <input type="number" id="matchValue" placeholder="Ex: 30" min="0" step="0.50" value="30" oninput="renderMatchList()"/>
       </div>
     </div>
-    <div class="card">
+    <div class="card card-m">
       <div class="card-title">👥 SELECIONAR JOGADORES DO BANCO</div>
-      <div id="dbPickerEmpty" class="empty-state" style="padding:24px"><div class="empty-text">Cadastre jogadores na aba "Jogadores" primeiro.</div></div>
+      <div class="card-help">Toque nos jogadores para marcar quem vai jogar hoje, depois clique em "Adicionar à Pelada".</div>
+      <div id="dbPickerEmpty" class="empty-state" style="padding:24px"><div class="empty-icon">🧍</div><div class="empty-text">Cadastre jogadores na aba "Jogadores" primeiro.</div></div>
       <div id="dbPicker" class="hidden"></div>
       <div class="mt12 row" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
         <span class="muted small" id="pickerCount">0 selecionados</span>
@@ -268,7 +281,7 @@ select{cursor:pointer;}
         </div>
       </div>
     </div>
-    <div class="card">
+    <div class="card card-m">
       <div class="card-title">⚽ JOGADORES NA PELADA (<span id="matchCount">0</span>)</div>
       <div class="stats" id="matchStats" style="display:none">
         <div class="stat" style="border-color:#2e7d3255"><div class="stat-n" style="color:#4caf50" id="stTotal">0</div><div class="stat-l">👥 Total</div></div>
@@ -276,7 +289,7 @@ select{cursor:pointer;}
         <div class="stat" style="border-color:#b71c1c55"><div class="stat-n" style="color:#ef5350" id="stPend">0</div><div class="stat-l">⏳ Pendente</div></div>
         <div class="stat" style="border-color:#f9a82555"><div class="stat-n" style="color:#ffd54f;font-size:16px" id="stArr">R$ 0</div><div class="stat-l">💰 Arrecadado</div></div>
       </div>
-      <div id="matchList"><div class="empty-state" style="padding:24px"><div class="empty-text">Selecione jogadores acima.</div></div></div>
+      <div id="matchList"><div class="empty-state" style="padding:24px"><div class="empty-icon">👈</div><div class="empty-text">Selecione jogadores acima para começar.</div></div></div>
     </div>
     <button class="btn-draw btn" id="btnDraw" disabled onclick="drawTeams()">⚽ SORTEAR TIMES <span id="drawHint">(mínimo 12)</span></button>
     <div id="teamsSection" class="hidden" style="margin-top:16px;">
@@ -290,7 +303,7 @@ select{cursor:pointer;}
       <button class="btn-draw btn" onclick="drawTeams()" style="margin-top:12px;background:linear-gradient(135deg,#0d47a1,#1976d2);box-shadow:0 4px 18px rgba(25,118,210,.25);">🔀 SORTEAR NOVAMENTE</button>
     </div>
     <hr class="divider"/>
-    <div class="card" style="margin-top:0;">
+    <div class="card card-m" style="margin-top:0;">
       <div class="card-title">💸 DESPESAS DA PELADA</div>
       <div id="matchExpList"></div>
       <div class="row mt8" style="gap:8px;flex-wrap:wrap;">
@@ -305,16 +318,18 @@ select{cursor:pointer;}
 
   <!-- TAB HISTORICO -->
   <div id="tab-history" class="hidden">
-    <div class="card">
+    <div class="card card-h">
       <div class="card-title">📋 PELADAS SALVAS</div>
+      <div class="card-help">Todas as peladas que você salvou aparecem aqui — toque em uma para ver detalhes, gerar PDF ou reabrir para editar.</div>
       <div id="historyList"><div class="empty-state"><div class="empty-icon">📅</div><div class="empty-text">Nenhuma pelada salva ainda.</div></div></div>
     </div>
   </div>
 
   <!-- TAB FINANCEIRO -->
   <div id="tab-finance" class="hidden">
-    <div class="card">
+    <div class="card card-f">
       <div class="card-title">📅 PERÍODO DO RELATÓRIO</div>
+      <div class="card-help">Filtre por data para ver os números só de um mês ou temporada. Deixe em branco para ver tudo.</div>
       <div class="row" style="gap:12px;align-items:flex-end;flex-wrap:wrap;">
         <div style="flex:1;min-width:130px;"><div style="font-size:11px;color:#66bb6a;margin-bottom:6px;font-weight:700;">DE</div><input type="date" id="finFrom" onchange="renderFinance()"/></div>
         <div style="flex:1;min-width:130px;"><div style="font-size:11px;color:#66bb6a;margin-bottom:6px;font-weight:700;">ATÉ</div><input type="date" id="finTo" onchange="renderFinance()"/></div>
@@ -322,7 +337,7 @@ select{cursor:pointer;}
       </div>
       <div id="finPeriodLabel" class="mt8 small muted hidden"></div>
     </div>
-    <div class="card">
+    <div class="card card-f">
       <div class="card-title">💸 DESPESAS POR PELADA</div>
       <div id="expenseList"></div>
     </div>
@@ -340,10 +355,14 @@ select{cursor:pointer;}
         <div class="fin-val" id="finSaldo">R$ 0</div><div class="fin-lbl" id="finSaldoLbl" style="color:#ba68c8">📊 SALDO</div>
       </div>
     </div>
-    <div class="card"><div class="card-title">📅 ARRECADAÇÃO POR PELADA</div><div id="finByMatch"></div></div>
-    <div class="card" id="finExpCard" style="display:none"><div class="card-title">💸 DETALHAMENTO DE DESPESAS</div><div id="finExpDetail"></div></div>
-    <div class="card"><div class="card-title">⚠️ PAGAMENTOS PENDENTES</div><div id="finDebtors"></div></div>
-    <div class="card"><div class="card-title">🏆 RANKING DE PARTICIPAÇÃO</div><div id="finRanking"></div></div>
+    <div class="card card-f"><div class="card-title">📅 ARRECADAÇÃO POR PELADA</div><div id="finByMatch"></div></div>
+    <div class="card card-f" id="finExpCard" style="display:none"><div class="card-title">💸 DETALHAMENTO DE DESPESAS</div><div id="finExpDetail"></div></div>
+    <div class="card card-f"><div class="card-title">⚠️ PAGAMENTOS PENDENTES</div><div id="finDebtors"></div></div>
+    <div class="card card-f">
+      <div class="card-title">🏆 RANKING DE PARTICIPAÇÃO</div>
+      <div class="card-help">Quem mais aparece nas peladas do período, do mais presente ao menos presente.</div>
+      <div id="finRanking"></div>
+    </div>
     <button class="btn-fin-pdf btn" onclick="generateFinancialPDF()">📊 GERAR RELATÓRIO FINANCEIRO PDF</button>
     <button class="btn-contrib-pdf btn" onclick="generatePlayerContributionPDF()">👤 RELATÓRIO DE CONTRIBUIÇÃO POR JOGADOR</button>
   </div>
@@ -398,6 +417,7 @@ function initApp(cfg){
     document.getElementById('appContent').classList.remove('hidden');
     document.getElementById('matchDate').value = new Date().toISOString().slice(0,10);
     updateMatchDate();
+    setGreeting();
     startListeners();
   } catch(e){
     localStorage.removeItem('ptafc_fbcfg');
@@ -490,6 +510,7 @@ function renderDb(){
   list.innerHTML=dbPlayers.map((p,i)=>`
     <div class="player-row">
       <div class="p-num">${i+1}</div>
+      <div class="avatar-circle sm">${esc((p.name||'?').trim().charAt(0).toUpperCase())}</div>
       <div class="p-info"><div class="p-name">${esc(p.name)}</div><span class="badge badge-pos">${p.position}</span></div>
       <button class="btn-icon" onclick="removeDbPlayer('${p._id}')" title="Remover">🗑️</button>
     </div>`).join('');
@@ -505,6 +526,7 @@ function renderDbPicker(){
     const sel=inMatch.has(p._id);
     return `<div class="db-player ${sel?'selected':''}" id="pick-${p._id}" onclick="togglePick('${p._id}')">
       <div class="db-check">${sel?'✓':''}</div>
+      <div class="avatar-circle sm">${esc((p.name||'?').trim().charAt(0).toUpperCase())}</div>
       <div style="flex:1"><div style="font-size:14px;font-weight:700;color:#fff">${esc(p.name)}</div><span class="badge badge-pos">${p.position}</span></div>
     </div>`;
   }).join('');
@@ -598,7 +620,7 @@ function renderMatchList(){
   const paidN=matchPlayers.filter(p=>p.paid).length;
   const totalArr=matchPlayers.filter(p=>p.paid).reduce((s,p)=>s+(p.valor||0),0);
   document.getElementById('matchCount').textContent=matchPlayers.length;
-  if(!matchPlayers.length){ stats.style.display='none'; list.innerHTML=`<div class="empty-state" style="padding:24px"><div class="empty-text">Selecione jogadores acima.</div></div>`; return; }
+  if(!matchPlayers.length){ stats.style.display='none'; list.innerHTML=`<div class="empty-state" style="padding:24px"><div class="empty-icon">👈</div><div class="empty-text">Selecione jogadores acima para começar.</div></div>`; return; }
   stats.style.display='flex';
   document.getElementById('stTotal').textContent=matchPlayers.length;
   document.getElementById('stPaid').textContent=paidN;
@@ -777,7 +799,7 @@ function renderMatchExpenses(){
   const list=document.getElementById('matchExpList');
   if(!list) return;
   if(!matchExps.length){
-    list.innerHTML=`<div class="empty-state" style="padding:16px 0"><div class="empty-text">Nenhuma despesa para esta pelada.</div></div>`;
+    list.innerHTML=`<div class="empty-state" style="padding:16px 0"><div class="empty-text">Nenhuma despesa por aqui ainda. 🧾</div></div>`;
     return;
   }
   const total=matchExps.reduce((s,e)=>s+e.val,0);
@@ -828,7 +850,7 @@ function renderFinance(){
   document.getElementById('finSaldoLbl').textContent=saldo>=0?'✅ SALDO':'❌ DÉFICIT';
 
   const byMatch=document.getElementById('finByMatch');
-  if(!filtered.length){ byMatch.innerHTML=`<div class="empty-state" style="padding:24px"><div class="empty-text">Nenhuma pelada no período.</div></div>`; }
+  if(!filtered.length){ byMatch.innerHTML=`<div class="empty-state" style="padding:24px"><div class="empty-icon">📭</div><div class="empty-text">Nenhuma pelada encontrada nesse período.</div></div>`; }
   else byMatch.innerHTML=filtered.map(h=>{
     const defaultV=h.valor||0;
     const arr=h.players.filter(p=>p.paid).reduce((s,p)=>s+(p.valor!=null?p.valor:defaultV),0);
@@ -889,16 +911,20 @@ function renderFinance(){
     dList.map(d=>`<div class="fin-row"><div style="flex:1"><span style="font-weight:700;color:#fff">${esc(d.name)}</span> <span style="font-size:11px;color:#66bb6a">${d.count} pelada(s)</span></div><span style="color:#ef9a9a;font-weight:700">${fmtR(d.total)}</span></div>`).join('');
 
   const medals=['🥇','🥈','🥉'];
+  const totalPeladasFin=filtered.length;
   const rList=Object.values(rankMap).sort((a,b)=>b.peladas-a.peladas||b.pagou-a.pagou);
   const ranking=document.getElementById('finRanking');
-  ranking.innerHTML=!rList.length?`<div class="empty-state" style="padding:24px"><div class="empty-text">Salve peladas para ver o ranking.</div></div>`:
+  ranking.innerHTML=!rList.length?`<div class="empty-state" style="padding:24px"><div class="empty-icon">🏃</div><div class="empty-text">Salve peladas para ver quem mais aparece! ⚽</div></div>`:
     rList.map((r,i)=>{
-      const taxa=r.peladas>0?Math.round(r.pagou/r.peladas*100):0, pct=Math.round(r.peladas/(rList[0].peladas||1)*100);
+      const taxa=r.peladas>0?Math.round(r.pagou/r.peladas*100):0;
+      const pctPart=totalPeladasFin>0?Math.round(r.peladas/totalPeladasFin*100):0;
       return `<div class="fin-row">
-        <span style="font-size:18px;min-width:24px">${medals[i]||'#'+(i+1)}</span>
+        <span style="font-size:20px;min-width:26px;text-align:center">${medals[i]||'#'+(i+1)}</span>
+        <div class="avatar-circle">${esc((r.name||'?').trim().charAt(0).toUpperCase())}</div>
         <div style="flex:1"><div style="font-weight:700;color:#fff;font-size:14px">${esc(r.name)}</div>
-          <div class="fin-bar-wrap" style="margin-top:5px"><div class="fin-bar" style="width:${pct}%;background:#1565c0"></div></div></div>
-        <span style="font-size:11px;padding:3px 8px;border-radius:5px;background:${taxa===100?'#1b3d1b':'#3d2a0a'};color:${taxa===100?'#69f0ae':'#ffd54f'};font-weight:700;white-space:nowrap">${r.pagou}/${r.peladas} (${taxa}%)</span>
+          <div class="fin-bar-wrap" style="margin-top:5px"><div class="fin-bar" style="width:${pctPart}%;background:#1565c0"></div></div>
+          <div style="font-size:10px;color:#66bb6a;margin-top:3px">🙋 ${pctPart}% de participação no período</div></div>
+        <span style="font-size:11px;padding:3px 8px;border-radius:5px;background:${taxa===100?'#1b3d1b':'#3d2a0a'};color:${taxa===100?'#69f0ae':'#ffd54f'};font-weight:700;white-space:nowrap">${r.peladas} pelada${r.peladas!==1?'s':''}</span>
       </div>`;
     }).join('');
 }
@@ -1049,10 +1075,11 @@ function generatePlayerContributionPDF(){
     });
   });
 
-  const pList=Object.values(playerMap).sort((a,b)=>b.pago-a.pago||a.pendente-b.pendente);
+  const pList=Object.values(playerMap).sort((a,b)=>b.peladas-a.peladas||b.pago-a.pago);
   const grandPago=pList.reduce((s,p)=>s+p.pago,0);
   const grandPend=pList.reduce((s,p)=>s+p.pendente,0);
   const grandTotal=grandPago+grandPend;
+  const totalPeladasPeriodo=filtered.length;
 
   const fmt=s=>new Date(s+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'});
   const fR=v=>'R$ '+v.toFixed(2).replace('.',',');
@@ -1065,7 +1092,7 @@ function generatePlayerContributionPDF(){
     const taxa=p.peladas>0?Math.round(p.pago/p.totalDev*100):0;
     const statusColor=taxa===100?'#1b5e20':taxa===0?'#c62828':'#e65100';
     const statusBg=taxa===100?'#e8f5e9':taxa===0?'#ffebee':'#fff3e0';
-    const pctPago=grandTotal>0?Math.round(p.pago/grandTotal*100):0;
+    const pctParticipacao=totalPeladasPeriodo>0?Math.round(p.peladas/totalPeladasPeriodo*100):0;
     return `
     <tr>
       <td style="text-align:center;font-size:14px">${medalhas[i]||'#'+(i+1)}</td>
@@ -1075,7 +1102,7 @@ function generatePlayerContributionPDF(){
       <td style="text-align:right;color:${p.pendente>0?'#c62828':'#999'};font-weight:700">${p.pendente>0?fR(p.pendente):'-'}</td>
       <td style="text-align:right;font-weight:700">${fR(p.totalDev)}</td>
       <td style="text-align:center"><span style="background:${statusBg};color:${statusColor};padding:2px 7px;border-radius:4px;font-weight:700;font-size:10px">${taxa}%</span></td>
-      <td style="text-align:right;color:#666;font-size:10px">${pctPago}%</td>
+      <td style="text-align:right;color:#00695c;font-weight:700;font-size:10px">${pctParticipacao}%</td>
     </tr>
     <tr class="detail-row" style="background:#f9f9f9">
       <td colspan="8" style="padding:4px 12px 8px 36px;">
@@ -1132,7 +1159,7 @@ function generatePlayerContributionPDF(){
       <th style="text-align:right">PENDENTE</th>
       <th style="text-align:right">TOTAL DUE</th>
       <th style="text-align:center">TAXA</th>
-      <th style="text-align:right">% DO TOTAL</th>
+      <th style="text-align:right">% PARTICIPAÇÃO</th>
     </tr>
     ${rowsHTML}
     <tr style="background:#e0f7fa">
@@ -1151,6 +1178,12 @@ function generatePlayerContributionPDF(){
 }
 
 // ══ HELPERS ════════════════════════════════════════
+function setGreeting(){
+  const h=new Date().getHours();
+  const saud=h<12?'Bom dia':h<18?'Boa tarde':'Boa noite';
+  const el=document.getElementById('hGreeting');
+  if(el) el.innerHTML=`${saud}! Vamo que vamo ⚽ <span class="sync-dot" id="syncDot" style="display:none"></span>`;
+}
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function updateHeader(){ document.getElementById('hTotalDb').textContent=dbPlayers.length; }
 function toast(msg,type='success'){
